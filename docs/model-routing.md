@@ -1,3 +1,8 @@
+---
+layout: default
+title: Model routing
+---
+
 # Model routing
 
 GSD routes every agent to a model tier. The tier names (`opus`, `sonnet`,

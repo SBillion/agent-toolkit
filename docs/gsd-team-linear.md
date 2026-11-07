@@ -1,3 +1,8 @@
+---
+layout: default
+title: GSD in a team with Linear
+---
+
 # GSD in a team, with Linear
 
 GSD plans and executes; Linear records what was decided. The two must not drift.

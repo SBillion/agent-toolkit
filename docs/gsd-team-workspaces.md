@@ -1,3 +1,8 @@
+---
+layout: default
+title: Workspaces and workstreams
+---
+
 # GSD in a team: workspaces, workstreams, shared `.planning/`
 
 Three different problems get confused under "GSD in a team". They have three

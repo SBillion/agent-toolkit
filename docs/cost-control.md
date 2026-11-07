@@ -1,3 +1,8 @@
+---
+layout: default
+title: Cost control
+---
+
 # Cost control
 
 A GSD session re-sends its whole context on every step. On a long phase that is

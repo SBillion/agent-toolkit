@@ -1,3 +1,8 @@
+---
+layout: default
+title: gitnexus
+---
+
 # gitnexus: give the model the graph, not the files
 
 `gitnexus` indexes a repository into a symbol graph and exposes `impact`,
