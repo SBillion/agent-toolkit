@@ -1,10 +1,11 @@
-title: GSD Toolkit
+title: Agent Toolkit
 description: Spec-driven development for coding agents, and the tooling that keeps it affordable.
 theme: minima
 markdown: kramdown
 
 header_pages:
   - index.md
+  - usage.md
   - model-routing.md
   - cost-control.md
   - gitnexus.md

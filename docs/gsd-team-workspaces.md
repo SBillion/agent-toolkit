@@ -12,7 +12,11 @@ different answers:
 |---|---|
 | One machine, several features or repos at once | `/gsd-workspace` |
 | One repo, several parallel milestone streams | `/gsd-workstreams` |
-| Several people on one repo | conventions + one phase owner at a time |
+| Two people, two milestones, one repo | workstreams + committed `.planning/` |
+| Several people on one repo, same milestone | conventions + one phase owner at a time |
+
+If you only want a second checkout of the same branch, use `git worktree`. None
+of the below is needed, and none of it makes two checkouts share planning state.
 
 ## 1. Workspaces — isolate a whole feature across repos
 
@@ -54,8 +58,23 @@ branch is simpler and the phase artifacts stay next to the code.
 ## 2. Workstreams — parallel milestones in one repo
 
 A workstream lives *inside* `.planning/workstreams/<name>/` and carries its own
-`STATE.md` and phase artifacts. `PROJECT.md` stays shared: a workstream is a
-stream of work on the same product, not a different product.
+`STATE.md`, `ROADMAP.md`, `REQUIREMENTS.md` and phase artifacts. `PROJECT.md`
+stays shared: a workstream is a stream of work on the same product, not a
+different product.
+
+```
+.planning/
+├── PROJECT.md            # shared
+├── config.json           # shared
+├── milestones/           # shared — archived milestones and completed workstreams
+├── codebase/             # shared
+├── active-workstream     # shared marker, inherited only by sessions with no pointer
+└── workstreams/<name>/
+    ├── STATE.md
+    ├── ROADMAP.md
+    ├── REQUIREMENTS.md
+    └── phases/
+```
 
 ```bash
 /gsd-workstreams create retention
@@ -82,11 +101,42 @@ The pointer is stored **per session** where the runtime exposes a session id
 `STATE.md`. Where no session identity exists, the pointer is shared — then run
 one workstream at a time, or pass `--ws` explicitly on every command.
 
+**Adopting it mid-milestone.** On a flat project the first `create` also
+migrates: it moves the current `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md` and
+`phases/` into a workstream named after the current milestone (or `default`),
+then creates the stream you named, empty. Run `workstream list` after that first
+call — that is the migration, not the new stream. Later `create` calls only add
+an empty stream.
+
+**`complete` archives, it does not delete.** The whole workstream directory moves
+to `.planning/milestones/ws-<name>-<YYYY-MM-DD>/`; shared files stay where they
+are. Completing the last workstream returns the repo to flat mode with no active
+roadmap, so open the next milestone there, never in the archive.
+
+**Milestone and workstream are not the same unit.** A workstream runs its
+milestones one after another: `/gsd-new-milestone --ws <name>` opens the next,
+the milestone audit closes it, and the shared `.planning/milestones/` keeps the
+archive. Complete the workstream only when no milestone is left in it — that
+moves the whole directory out, roadmap included.
+
+**Workstreams isolate state, not source.** Both streams still edit one working
+tree. With `git.branching_strategy: none` nothing separates them at all: give
+each stream its own branch (or stack layer) and disjoint file scopes, and
+serialize the phases that touch the same modules. If two streams need the same
+files at the same moment, they are one stream.
+
+**Two streams cost two streams.** Planning, execution and verification are paid
+twice and share no cache; the bill is the same as running the phases one after
+the other. Parallelism buys latency, not savings — see
+[cost control](cost-control.md).
+
 **Workspace or workstream?**
 
 - Different repos → workspace.
 - Same repo, one product, two streams that land in different milestones →
   workstream.
+- Same repo, two people, two milestones → workstreams **and** `.planning/` in
+  git; without the commit each machine runs its own private planning.
 - Same repo and you just want a branch → neither. Branch as usual.
 
 ## 3. Several people, one repo
@@ -100,7 +150,12 @@ tooling. The rules that hold up:
    tickets inside a phase and let one person run the gate.
 2. **Commit `.planning/` with the code.** It is the contract: the roadmap, the
    requirements, the verification report. A phase's `.planning/` commits ride in
-   the same PR as its code (on a stack layer, if the change is stacked).
+   the same PR as its code (on a stack layer, if the change is stacked). An
+   untracked `.planning/` — listed in `.git/info/exclude`, or `commit_docs:
+   false` — makes workstreams a one-machine feature: `git worktree add` and
+   `git clone` start with no `.planning/` at all, so a teammate or a second
+   checkout sees a flat project and plans over the same phases. Keep
+   `commit_docs: true` the moment two people or two machines work in parallel.
 3. **`STATE.md` is the only hot file.** It changes on every step. If two streams
    must share a checkout, give each its own workstream — that is exactly what
    workstreams are for.
@@ -110,6 +165,10 @@ tooling. The rules that hold up:
 5. **Resync before the milestone audit, not after.** `ROADMAP.md`,
    `REQUIREMENTS.md` and `STATE.md` drift from what was actually built. The
    audit should find real gaps, not bookkeeping.
+6. **Pin one GSD release for the whole team.** The artifact shapes in
+   `STATE.md`, `config.json` and `state.json` move between releases; two
+   versions on one branch produce state neither can read. Write the version in
+   the repo's bootstrap notes and upgrade it in one PR, not per machine.
 
 ## 4. Onboarding a teammate
 
@@ -119,7 +178,7 @@ npx -y @opengsd/gsd-core@latest --opencode     # or --claude, --codex, …
 
 # 2. the project's own settings
 git clone <repo> && cd <repo>
-cat .planning/config.json                      # runtime, profile, models
+cat .planning/config.json                      # runtime, profile, models, commit_docs
 
 # 3. global model routing (optional, per machine)
 #    ~/.gsd/defaults.json, then:
@@ -133,9 +192,15 @@ usual reason a fresh machine burns through a plan in a day.
 Then:
 
 ```
-/gsd-progress        # where the project actually is
-/gsd-resume-work     # pick up the active phase
+/gsd-progress            # where the project actually is
+/gsd-workstreams list    # which streams exist, and which one is yours
+/gsd-resume-work         # pick up the active phase
 ```
+
+When workstreams are in play, select yours with `--ws` or `GSD_WORKSTREAM` on
+every command. `.planning/active-workstream` is only the fallback for a session
+with no identity of its own; never treat it as the selector while two sessions
+run.
 
 **Do not copy `~/.gsd/defaults.json` from someone else.** Its `model_overrides`
 are not filtered by runtime: a Claude-routed file on an opencode machine forces
@@ -154,6 +219,8 @@ ticket in Linear  →  branch INT-<n>-<slug>  →  /gsd-plan-phase N
   `Closes INT-<n>` in the body.
 - `git.branching_strategy: none` means GSD will not create a branch for you:
   open the stack layer first, then run the phase.
+- One phase at a time **per workstream**. Two streams running phases in the same
+  checkout still share the build, the test suite and the lockfile.
 - One verification per phase, at the end of execution. Re-running it "to see"
   is the most expensive habit in the workflow — see
   [cost control](cost-control.md).

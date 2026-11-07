@@ -3,7 +3,7 @@ layout: default
 title: Start here
 ---
 
-# GSD Toolkit
+# Agent Toolkit
 
 Spec-driven development for coding agents, and the tooling that keeps it
 affordable and grounded in the codebase.
@@ -42,6 +42,7 @@ or CI, and no setting prevents the most expensive habit: re-running a phase
 
 ## Read next
 
+- [Using it, start to finish](usage.md) — install, per-repo rules, routing, the site
 - [Model routing](model-routing.md) — three tiers, and the traps that break them
 - [Cost control](cost-control.md) — where the money goes
 - [gitnexus](gitnexus.md) — the graph instead of the files
@@ -50,13 +51,14 @@ or CI, and no setting prevents the most expensive habit: re-running a phase
 
 ## Scripts and configuration
 
-- [`bin/gsd-usage`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-usage) — what a session costs
-- [`bin/gsd-recall`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-recall) — past decisions, verbatim
-- [`bin/gsd-fresh`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-fresh) — stale code-graph indexes
-- [`bin/gsd-credits`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-credits) — provider switch
-- [`bin/gsd-compact-all`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-compact-all) — compact artifacts
-- [`config/defaults.example.json`](https://github.com/SBillion/gsd-toolkit/blob/main/config/defaults.example.json) — model routing
-- [`config/opencode.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/opencode.jsonc) · [`config/dcp.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/dcp.jsonc) — context caps
-- [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/gsd-toolkit/blob/main/plugins/gitnexus-guard.ts) — the edit guard
+- [`bin/gsd-usage`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-usage) — what a session costs
+- [`bin/gsd-recall`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-recall) — past decisions, verbatim
+- [`bin/gsd-fresh`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-fresh) — stale code-graph indexes
+- [`bin/gsd-credits`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-credits) — provider switch
+- [`bin/gsd-compact-all`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-compact-all) — compact artifacts
+- [`bin/agent-rules`](https://github.com/SBillion/agent-toolkit/blob/main/bin/agent-rules) — install the agent rules in a repo
+- [`config/defaults.example.json`](https://github.com/SBillion/agent-toolkit/blob/main/config/defaults.example.json) — model routing
+- [`config/opencode.jsonc`](https://github.com/SBillion/agent-toolkit/blob/main/config/opencode.jsonc) · [`config/dcp.jsonc`](https://github.com/SBillion/agent-toolkit/blob/main/config/dcp.jsonc) — context caps
+- [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/agent-toolkit/blob/main/plugins/gitnexus-guard.ts) — the edit guard
 
-Source and install notes: [github.com/SBillion/gsd-toolkit](https://github.com/SBillion/gsd-toolkit).
+Source and install notes: [github.com/SBillion/agent-toolkit](https://github.com/SBillion/agent-toolkit).

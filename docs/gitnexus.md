@@ -93,6 +93,6 @@ or gitnexus_context for its callers, then retry the edit.
 
 ---
 
-Files: [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/gsd-toolkit/blob/main/plugins/gitnexus-guard.ts) ·
-[`bin/gsd-fresh`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-fresh) ·
-[`AGENTS.md`](https://github.com/SBillion/gsd-toolkit/blob/main/AGENTS.md)
+Files: [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/agent-toolkit/blob/main/plugins/gitnexus-guard.ts) ·
+[`bin/gsd-fresh`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-fresh) ·
+[`AGENTS.md`](https://github.com/SBillion/agent-toolkit/blob/main/AGENTS.md)

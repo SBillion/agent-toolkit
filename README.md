@@ -1,4 +1,4 @@
-# GSD Toolkit
+# Agent Toolkit
 
 **A reference for teams using GSD — spec-driven development for coding agents —
 plus the tooling we built to keep it affordable and grounded in the codebase.**
@@ -72,14 +72,15 @@ Beyond the method, the scripts that keep it affordable and grounded:
 | [`bin/gsd-compact-all`](bin/gsd-compact-all) | Turn on compact artifacts in every project under a root. |
 | [`plugins/gitnexus-guard.ts`](plugins/gitnexus-guard.ts) | Refuses a source edit until the code graph has been queried once. |
 | [`config/defaults.example.json`](config/defaults.example.json) | Three-tier model routing, per agent. |
+| [`templates/rules/`](templates/rules/) · [`bin/agent-rules`](bin/agent-rules) | The agent rules to install in a new repo (delivery, GSD, tests, language, security), and its installer. |
 | [`config/opencode.jsonc`](config/opencode.jsonc) · [`config/dcp.jsonc`](config/dcp.jsonc) | Context caps and pruning thresholds. |
 | [`AGENTS.md`](AGENTS.md) | Global tool-routing rules for the agent. |
 
 ## Quick start
 
 ```bash
-git clone https://github.com/SBillion/gsd-toolkit
-cd gsd-toolkit && ./install.sh
+git clone https://github.com/SBillion/agent-toolkit
+cd agent-toolkit && ./install.sh
 
 gsd-usage --days 7 --by-agent     # where the money went
 gsd-recall "why did we choose"    # what was decided
@@ -93,11 +94,13 @@ overwriting** anything. Model IDs in `config/` must match your provider.
 
 | | |
 |---|---|
+| [Using it, start to finish](docs/usage.md) | Install, per-repo rules, model routing, the published site |
 | [Model routing](docs/model-routing.md) | Three tiers, per-agent overrides, and the three traps that silently break it |
 | [Cost control](docs/cost-control.md) | Where the money goes and the five rules that bring it down |
 | [gitnexus](docs/gitnexus.md) | Give the model the graph instead of the files |
 | [GSD in a team with Linear](docs/gsd-team-linear.md) | Tickets, branches, stacked PRs, conventional commits |
-| [Workspaces and workstreams](docs/gsd-team-workspaces.md) | Parallel features, multiple repos, shared `.planning/`, onboarding |
+| [Workspaces and workstreams](docs/gsd-team-workspaces.md) | Parallel features, multiple repos, parallel milestones, shared `.planning/`, onboarding |
+| [Agent rules](templates/rules/index.md) | The conventions to install in a new repo: delivery, GSD, tests, language, security |
 
 ## A note on trust
 

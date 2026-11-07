@@ -124,7 +124,7 @@ discount of the plan you are on, not the usage you are burning.
 
 ---
 
-Files: [`bin/gsd-usage`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-usage) ·
-[`bin/gsd-compact-all`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-compact-all) ·
-[`config/opencode.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/opencode.jsonc) ·
-[`config/dcp.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/dcp.jsonc)
+Files: [`bin/gsd-usage`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-usage) ·
+[`bin/gsd-compact-all`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-compact-all) ·
+[`config/opencode.jsonc`](https://github.com/SBillion/agent-toolkit/blob/main/config/opencode.jsonc) ·
+[`config/dcp.jsonc`](https://github.com/SBillion/agent-toolkit/blob/main/config/dcp.jsonc)
