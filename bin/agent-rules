@@ -3,23 +3,49 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: agent-rules <PREFIX> [base-branch] [--hooks] [--force]   e.g. agent-rules INT main" >&2
+  cat >&2 <<'U'
+usage: agent-rules [PREFIX] [base-branch] [--tracker linear|outline|none] [--hooks] [--force]
+
+  PREFIX          ticket prefix (INT, LET, EXS…). Omit it with --tracker none.
+  --tracker       what tracks the work: linear (default), outline, or none.
+  --hooks         install .githooks/commit-msg (needs a PREFIX)
+  --force         overwrite an existing commit-msg hook
+
+  agent-rules INT main --hooks
+  agent-rules --tracker none --hooks     # personal repo, no tickets
+U
   exit 2
 }
 
 prefix=""
 base="main"
+tracker="linear"
 hooks=0
 force=0
-for arg in "$@"; do
-  case "$arg" in
+while [ $# -gt 0 ]; do
+  case "$1" in
     --hooks) hooks=1 ;;
     --force) force=1 ;;
+    --tracker)
+      [ $# -ge 2 ] || usage
+      tracker="$2"; shift ;;
+    --tracker=*) tracker="${1#*=}" ;;
     -*) usage ;;
-    *) if [ -z "$prefix" ]; then prefix="$arg"; else base="$arg"; fi ;;
+    *) if [ -z "$prefix" ]; then prefix="$1"; else base="$1"; fi ;;
   esac
+  shift
 done
-[ -n "$prefix" ] || usage
+
+case "$tracker" in
+  linear|outline|none) ;;
+  *) echo "--tracker must be linear, outline or none" >&2; exit 2 ;;
+esac
+if [ -z "$prefix" ] && [ "$tracker" != none ]; then
+  echo "a PREFIX is required with --tracker $tracker" >&2; exit 2
+fi
+if [ "$hooks" = 1 ] && [ -z "$prefix" ]; then
+  echo "the commit-msg hook needs a PREFIX (it writes the ticket from the branch)" >&2; exit 2
+fi
 
 self="$(readlink "$0" || echo "$0")"
 here="$(cd "$(dirname "$self")/.." && pwd)"
@@ -31,7 +57,8 @@ if [ -e "$dest" ]; then
 else
   mkdir -p "$dest"
   for f in "$here"/templates/rules/*.md; do
-    sed -e "s/<PREFIX>/$prefix/g" -e "s/<BASE_BRANCH>/$base/g" "$f" >"$dest/$(basename "$f")"
+    sed -e "s/<PREFIX>/$prefix/g" -e "s/<BASE_BRANCH>/$base/g" -e "s/<TRACKER>/$tracker/g" \
+      "$f" >"$dest/$(basename "$f")"
   done
   echo "wrote $dest"
 fi
