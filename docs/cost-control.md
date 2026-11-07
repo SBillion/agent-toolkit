@@ -105,3 +105,10 @@ It reads `~/.local/share/opencode/opencode.db` (`session_message` joined to
 `session_v2`) and prices each message at list rates, including the Haiku tier.
 The `cost` column in the database is not reliable for this — it reflects the
 discount of the plan you are on, not the usage you are burning.
+
+---
+
+Files: [`bin/gsd-usage`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-usage) ·
+[`bin/gsd-compact-all`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-compact-all) ·
+[`config/opencode.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/opencode.jsonc) ·
+[`config/dcp.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/dcp.jsonc)

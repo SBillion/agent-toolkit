@@ -90,3 +90,9 @@ or gitnexus_context for its callers, then retry the edit.
   confirm with a text search before changing or deleting the symbol.
 - `context` — one symbol's definition, callers and callees.
 - `query` — a concept or flow, in plain language.
+
+---
+
+Files: [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/gsd-toolkit/blob/main/plugins/gitnexus-guard.ts) ·
+[`bin/gsd-fresh`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-fresh) ·
+[`AGENTS.md`](https://github.com/SBillion/gsd-toolkit/blob/main/AGENTS.md)

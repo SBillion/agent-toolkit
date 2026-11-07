@@ -65,14 +65,15 @@ Beyond the method, the scripts that keep it affordable and grounded:
 
 | Path | What it does |
 |---|---|
-| `bin/gsd-credits` | Swap every agent and the default model between a subscription and pay-per-token credits, then rebake. |
-| `bin/gsd-usage` | What sessions actually cost — per day, model and agent, at list prices. |
-| `bin/gsd-recall` | Search every past session verbatim. "What did we decide, and why?" |
-| `bin/gsd-fresh` | Report or reindex stale code-graph indexes. |
-| `bin/gsd-compact-all` | Turn on compact artifacts in every project under a root. |
-| `plugins/gitnexus-guard.ts` | Refuses a source edit until the code graph has been queried once. |
-| `config/` | Three-tier model routing, context caps, pruning thresholds. |
-| `AGENTS.md` | Global tool-routing rules for the agent. |
+| [`bin/gsd-credits`](bin/gsd-credits) | Swap every agent and the default model between a subscription and pay-per-token credits, then rebake. |
+| [`bin/gsd-usage`](bin/gsd-usage) | What sessions actually cost — per day, model and agent, at list prices. |
+| [`bin/gsd-recall`](bin/gsd-recall) | Search every past session verbatim. "What did we decide, and why?" |
+| [`bin/gsd-fresh`](bin/gsd-fresh) | Report or reindex stale code-graph indexes. |
+| [`bin/gsd-compact-all`](bin/gsd-compact-all) | Turn on compact artifacts in every project under a root. |
+| [`plugins/gitnexus-guard.ts`](plugins/gitnexus-guard.ts) | Refuses a source edit until the code graph has been queried once. |
+| [`config/defaults.example.json`](config/defaults.example.json) | Three-tier model routing, per agent. |
+| [`config/opencode.jsonc`](config/opencode.jsonc) · [`config/dcp.jsonc`](config/dcp.jsonc) | Context caps and pruning thresholds. |
+| [`AGENTS.md`](AGENTS.md) | Global tool-routing rules for the agent. |
 
 ## Quick start
 

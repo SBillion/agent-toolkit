@@ -48,6 +48,15 @@ or CI, and no setting prevents the most expensive habit: re-running a phase
 - [GSD in a team with Linear](gsd-team-linear.md) — tickets, branches, PRs
 - [Workspaces and workstreams](gsd-team-workspaces.md) — parallel work, onboarding
 
-The scripts are in [`bin/`](https://github.com/SBillion/gsd-toolkit/tree/main/bin);
-the install notes are in the
-[README](https://github.com/SBillion/gsd-toolkit#readme).
+## Scripts and configuration
+
+- [`bin/gsd-usage`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-usage) — what a session costs
+- [`bin/gsd-recall`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-recall) — past decisions, verbatim
+- [`bin/gsd-fresh`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-fresh) — stale code-graph indexes
+- [`bin/gsd-credits`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-credits) — provider switch
+- [`bin/gsd-compact-all`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-compact-all) — compact artifacts
+- [`config/defaults.example.json`](https://github.com/SBillion/gsd-toolkit/blob/main/config/defaults.example.json) — model routing
+- [`config/opencode.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/opencode.jsonc) · [`config/dcp.jsonc`](https://github.com/SBillion/gsd-toolkit/blob/main/config/dcp.jsonc) — context caps
+- [`plugins/gitnexus-guard.ts`](https://github.com/SBillion/gsd-toolkit/blob/main/plugins/gitnexus-guard.ts) — the edit guard
+
+Source and install notes: [github.com/SBillion/gsd-toolkit](https://github.com/SBillion/gsd-toolkit).
