@@ -64,7 +64,8 @@ See [`docs/`](docs/) for the reasoning behind each piece:
 [model routing](docs/model-routing.md) ·
 [cost control](docs/cost-control.md) ·
 [gitnexus](docs/gitnexus.md) ·
-[GSD in a team with Linear](docs/gsd-team-linear.md).
+[GSD in a team with Linear](docs/gsd-team-linear.md) ·
+[workspaces, workstreams and shared `.planning/`](docs/gsd-team-workspaces.md).
 
 ## License
 

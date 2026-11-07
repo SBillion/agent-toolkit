@@ -2,6 +2,9 @@
 
 GSD plans and executes; Linear records what was decided. The two must not drift.
 
+For running several features or repos at once, and for onboarding a teammate, see
+[workspaces, workstreams and shared `.planning/`](gsd-team-workspaces.md).
+
 ## Tickets
 
 - **One ticket = one shippable outcome.** If the work spans slices, split it
