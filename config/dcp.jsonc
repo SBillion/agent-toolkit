@@ -6,7 +6,7 @@
     "permission": "allow",
     "maxContextLimit": 150000,
     "minContextLimit": 100000,
-    "nudgeFrequency": 5
+    "nudgeFrequency": 10
   },
   "strategies": {
     "deduplication": {
