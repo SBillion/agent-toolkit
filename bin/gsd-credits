@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Switch model routing between the OpenCode Go subscription and personal credits.
+# GSD has no fallback chain: this rewrites the provider prefix in the global
+# defaults and in opencode's own default model, then rebakes the agents.
+set -euo pipefail
+
+DEF="$HOME/.gsd/defaults.json"
+OC="$HOME/.config/opencode/opencode.jsonc"
+INSTALLER="$(npm prefix -g)/bin/gsd-core"
+
+state_of() {
+  [ -f "$1" ] || { echo none; return; }
+  if grep -q 'opencode-go/' "$1"; then echo go; else echo credits; fi
+}
+
+status() {
+  printf 'gsd agents: %s\n' "$(state_of "$DEF")"
+  printf 'opencode:   %s\n' "$(state_of "$OC")"
+}
+
+case "${1:-}" in
+  status) status ;;
+  go|credits)
+    if [ "$1" = go ]; then src='opencode/'; dst='opencode-go/'; else src='opencode-go/'; dst='opencode/'; fi
+
+    cp "$DEF" "$DEF.bak"
+    python3 - "$DEF" "$src" "$dst" <<'PY'
+import json, sys
+
+path, src, dst = sys.argv[1:]
+
+def walk(v):
+    if isinstance(v, str):
+        return dst + v[len(src):] if v.startswith(src) else v
+    if isinstance(v, list):
+        return [walk(x) for x in v]
+    if isinstance(v, dict):
+        return {k: walk(x) for k, x in v.items()}
+    return v
+
+with open(path) as f:
+    data = json.load(f)
+with open(path, "w") as f:
+    json.dump(walk(data), f, indent=2, ensure_ascii=False)
+    f.write("\n")
+PY
+
+    if [ -f "$OC" ]; then
+      cp "$OC" "$OC.bak"
+      python3 - "$OC" "$src" "$dst" <<'PY'
+import sys
+
+path, src, dst = sys.argv[1:]
+text = open(path).read()
+open(path, "w").write(text.replace('"' + src, '"' + dst))
+PY
+    fi
+
+    "$INSTALLER" -g --opencode >/dev/null
+    echo "-> $1"
+    status
+    ;;
+  *)
+    echo "usage: gsd-credits go|credits|status" >&2
+    exit 2
+    ;;
+esac

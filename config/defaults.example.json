@@ -1,0 +1,67 @@
+{
+  "resolve_model_ids": "omit",
+  "runtime": "opencode",
+  "model_profile": "balanced",
+
+  "models": {
+    "planning": "opus",
+    "discuss": "opus",
+    "research": "haiku",
+    "execution": "sonnet",
+    "verification": "haiku"
+  },
+
+  "model_profile_overrides": {
+    "opencode": {
+      "opus": "opencode/deepseek-v4-pro",
+      "sonnet": "opencode/deepseek-v4.1-flash",
+      "haiku": "opencode/claude-haiku-5-5"
+    }
+  },
+
+  "model_overrides": {
+    "gsd-planner": "opencode/deepseek-v4-pro",
+    "gsd-roadmapper": "opencode/deepseek-v4-pro",
+    "gsd-debugger": "opencode/deepseek-v4-pro",
+    "gsd-pattern-mapper": "opencode/deepseek-v4-pro",
+    "gsd-assumptions-analyzer": "opencode/deepseek-v4-pro",
+    "gsd-framework-selector": "opencode/deepseek-v4-pro",
+
+    "gsd-executor": "opencode/deepseek-v4.1-flash",
+    "gsd-code-fixer": "opencode/deepseek-v4.1-flash",
+    "gsd-verifier": "opencode/deepseek-v4.1-flash",
+    "gsd-integration-checker": "opencode/deepseek-v4.1-flash",
+    "gsd-nyquist-auditor": "opencode/deepseek-v4.1-flash",
+    "gsd-ui-auditor": "opencode/deepseek-v4.1-flash",
+    "gsd-doc-verifier": "opencode/deepseek-v4.1-flash",
+    "gsd-dom-verifier": "opencode/deepseek-v4.1-flash",
+    "gsd-eval-auditor": "opencode/deepseek-v4.1-flash",
+    "gsd-security-auditor": "opencode/deepseek-v4.1-flash",
+    "gsd-intel-updater": "opencode/deepseek-v4.1-flash",
+
+    "gsd-plan-checker": "opencode/claude-haiku-5-5",
+    "gsd-code-reviewer": "opencode/claude-haiku-5-5",
+    "gsd-ui-checker": "opencode/claude-haiku-5-5",
+    "gsd-phase-researcher": "opencode/claude-haiku-5-5",
+    "gsd-project-researcher": "opencode/claude-haiku-5-5",
+    "gsd-research-synthesizer": "opencode/claude-haiku-5-5",
+    "gsd-ui-researcher": "opencode/claude-haiku-5-5",
+    "gsd-advisor-researcher": "opencode/claude-haiku-5-5",
+    "gsd-ai-researcher": "opencode/claude-haiku-5-5",
+    "gsd-doc-synthesizer": "opencode/claude-haiku-5-5",
+    "gsd-domain-researcher": "opencode/claude-haiku-5-5",
+    "gsd-mempalace-curator": "opencode/claude-haiku-5-5",
+    "gsd-user-profiler": "opencode/claude-haiku-5-5"
+  },
+
+  "effort": {
+    "routing_tier_defaults": {
+      "heavy": "high"
+    }
+  },
+
+  "workflow": {
+    "plan_bounce": true,
+    "inline_plan_threshold": 2
+  }
+}

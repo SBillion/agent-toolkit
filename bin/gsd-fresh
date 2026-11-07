@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Report (or refresh) the gitnexus index for every indexed repo under $HOME.
+# Override the roots with GSD_FRESH_ROOTS (colon-separated) or GSD_FRESH_ROOT.
+set -uo pipefail
+
+FIX=0
+[ "${1:-}" = "--fix" ] && FIX=1
+
+if [ -n "${GSD_FRESH_ROOTS:-}" ]; then
+  IFS=: read -r -a ROOTS <<< "$GSD_FRESH_ROOTS"
+elif [ -n "${GSD_FRESH_ROOT:-}" ]; then
+  ROOTS=("$GSD_FRESH_ROOT")
+else
+  ROOTS=("$HOME")
+fi
+
+metas=""
+for root in "${ROOTS[@]}"; do
+  found=$(find "$root" -maxdepth 5 \
+    \( -name node_modules -o -name Library -o -name .npm -o -name .cache \
+       -o -name .cargo -o -name .config -o -name .local -o -name .Trash \
+       -o -name .git \) -prune -o \
+    -name .gitnexus -type d -print 2>/dev/null)
+  metas="$metas
+$found"
+done
+
+stale=0
+while IFS= read -r meta; do
+  [ -n "$meta" ] || continue
+  repo=$(dirname "$meta")
+  [ -f "$meta/meta.json" ] || continue
+  idx_commit=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("lastCommit",""))' "$meta/meta.json" 2>/dev/null)
+  head=$(git -C "$repo" rev-parse HEAD 2>/dev/null) || continue
+  name="${repo#"$HOME"/}"
+  [ "$name" = "$repo" ] && name=$(basename "$repo")
+
+  if [ "$idx_commit" = "$head" ]; then
+    printf '  ok    %s\n' "$name"
+    continue
+  fi
+
+  behind=$(git -C "$repo" rev-list --count "${idx_commit}..HEAD" 2>/dev/null || echo "?")
+  printf '  STALE %s  (%s commits behind)\n' "$name" "$behind"
+  stale=$((stale + 1))
+
+  if [ "$FIX" = 1 ]; then
+    ( cd "$repo" && gitnexus analyze --index-only >/dev/null 2>&1 ) \
+      && printf '        reindexed %s\n' "$name" \
+      || printf '        FAILED    %s\n' "$name"
+  fi
+done < <(printf '%s\n' "$metas" | grep -v '^$' | sort -u)
+
+echo
+[ "$stale" = 0 ] && echo "All indexes current." || echo "$stale stale index(es). Run: gsd-fresh --fix"
+exit 0

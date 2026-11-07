@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Set workflow.compact_content in every GSD project config under a root.
+
+Usage: gsd-compact-all [--dry-run] [--root PATH]
+
+Idempotent: a config already set to true is left byte-identical.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+
+def configs(root: Path, skip: set[Path]) -> list[Path]:
+    found = []
+    for path in root.rglob(".planning/config.json"):
+        if any(part in skip for part in path.parts):
+            continue
+        found.append(path)
+    return sorted(found)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--root", default=str(Path.home() / "Projects"))
+    args = parser.parse_args()
+
+    root = Path(args.root).expanduser()
+    if not root.is_dir():
+        print(f"no such root: {root}", file=sys.stderr)
+        return 1
+
+    changed = 0
+    for path in configs(root, {"node_modules", ".git", "worktrees"}):
+        try:
+            text = path.read_text(encoding="utf-8")
+            data = json.loads(text)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"skip (unreadable): {path} — {exc}")
+            continue
+
+        workflow = data.get("workflow")
+        if not isinstance(workflow, dict):
+            workflow = {}
+            data["workflow"] = workflow
+        if workflow.get("compact_content") is True:
+            continue
+
+        workflow["compact_content"] = True
+        print(f"{'would set' if args.dry_run else 'set'}: {path}")
+        changed += 1
+        if args.dry_run:
+            continue
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print(f"{changed} config(s) {'to change' if args.dry_run else 'changed'}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

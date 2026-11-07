@@ -1,0 +1,40 @@
+{
+  // Merge these keys into ~/.config/opencode/opencode.jsonc.
+  // Model IDs must match what `opencode models` prints for your provider.
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "opencode/deepseek-v4.1-flash",
+  "small_model": "opencode/deepseek-v4.1-flash",
+
+  // The single biggest context lever: tool output is resent on every step.
+  "tool_output": {
+    "max_lines": 800,
+    "max_bytes": 32768
+  },
+
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "opencode/deepseek-v4.1-flash",
+      // cheap by default: bump with Tab when a task needs reasoning
+      "variant": "low"
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "opencode/deepseek-v4-pro",
+      "permission": { "edit": "deny", "bash": "deny" }
+    }
+  },
+
+  "plugin": [
+    "@tarquinen/opencode-dcp@latest"
+  ],
+
+  "mcp": {
+    "gitnexus": {
+      "type": "local",
+      // `command -v gitnexus`
+      "command": ["/path/to/gitnexus", "mcp"]
+    }
+  }
+}

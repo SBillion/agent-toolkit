@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Print what the local OpenCode sessions actually consumed, per day and model.
+
+List-price estimate: the Go plan meters usage against per-model allowances, so
+this is the number that fills those gauges. Cached reads dominate GSD sessions,
+which is why they are shown and priced separately.
+
+Usage: gsd-usage [--days N] [--project SUBSTRING] [--by-agent]
+"""
+
+from __future__ import annotations
+
+import argparse
+import sqlite3
+from pathlib import Path
+
+DB = Path.home() / ".local/share/opencode/opencode.db"
+
+# USD per million tokens: (input, output, cache read). Haiku is tiered at 100K
+# prompt tokens, so it is priced per row below instead of in this table.
+PRICES = {
+    "deepseek-v4.1-flash": (0.30, 1.20, 0.006),
+    "deepseek-v4-pro": (1.74, 3.48, 0.145),
+}
+
+
+def cost(model: str, inp: int, cache: int, out: int) -> float:
+    if model == "claude-haiku-5-5":
+        if inp + cache > 100_000:
+            return (inp * 0.50 + cache * 0.05 + out * 2.50) / 1e6
+        return (inp * 0.10 + cache * 0.01 + out * 0.50) / 1e6
+    if model not in PRICES:
+        return 0.0
+    pin, pout, pcache = PRICES[model]
+    return (inp * pin + cache * pcache + out * pout) / 1e6
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--days", type=int, default=7)
+    parser.add_argument("--project", default=None, help="substring of the project path")
+    parser.add_argument("--by-agent", action="store_true")
+    args = parser.parse_args()
+
+    db = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+    where = ["m.type = 'assistant'", f"m.time_created >= (strftime('%s','now') - {args.days}*86400) * 1000"]
+    if args.project:
+        where.append("s.directory LIKE '%' || ? || '%'")
+    params = [args.project] if args.project else []
+
+    rows = db.execute(
+        f"""
+        select date(m.time_created/1000,'unixepoch','localtime') day,
+               json_extract(m.data,'$.model.id') model,
+               json_extract(m.data,'$.agent') agent,
+               json_extract(m.data,'$.tokens.input') inp,
+               coalesce(json_extract(m.data,'$.tokens.cache.read'),0) cache,
+               coalesce(json_extract(m.data,'$.tokens.output'),0)
+                 + coalesce(json_extract(m.data,'$.tokens.reasoning'),0) out
+        from session_message m join session_v2 s on s.id = m.session_id
+        where {' and '.join(where)}
+        """,
+        params,
+    ).fetchall()
+
+    buckets: dict[tuple, list] = {}
+    for day, model, agent, inp, cache, out in rows:
+        key = (day, model) if not args.by_agent else (day, model, agent)
+        b = buckets.setdefault(key, [0, 0, 0, 0.0])
+        b[0] += 1
+        b[1] += inp or 0
+        b[2] += cache or 0
+        b[3] += cost(model, inp or 0, cache or 0, out or 0)
+        if len(b) == 5:
+            b[4] += out or 0
+        else:
+            b.append(out or 0)
+
+    if not buckets:
+        print("no usage in range")
+        return 0
+
+    print(f"{'day':10} {'model':22} {'agent':22} {'msgs':>6} {'cache M':>9} {'out K':>8} {'USD':>8}")
+    total = 0.0
+    for key in sorted(buckets):
+        msgs, inp, cache, usd, out = buckets[key][0], buckets[key][1], buckets[key][2], buckets[key][3], buckets[key][4]
+        total += usd
+        agent = key[2] if args.by_agent else ""
+        print(f"{key[0]:10} {key[1]:22} {agent:22} {msgs:6} {cache/1e6:9.1f} {out/1e3:8.0f} {usd:8.2f}")
+    print(f"{'':10} {'':22} {'':22} {'':6} {'':9} {'total':>8} {total:8.2f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Search past opencode sessions for a term, scoped to the current project.
+
+Read-only. Searches every message ever exchanged (user + assistant text), so it
+answers "what did we decide / why is it like this" without an LLM or an index.
+
+    gsd-recall "sentry dsn"
+    gsd-recall "quota" --all --days 30 -n 40
+    gsd-recall "oauth" --project letmegetin
+    gsd-recall "sentry" -n 5 --offset 5     # next page
+"""
+from __future__ import annotations
+
+import argparse
+import heapq
+import itertools
+import json
+import os
+import sqlite3
+import sys
+from datetime import datetime, timedelta
+
+DB = os.path.expanduser("~/.local/share/opencode/opencode.db")
+
+
+def message_text(kind: str, raw: str) -> str:
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return ""
+    if kind == "user":
+        return data.get("text") or ""
+    parts = data.get("content") or []
+    return "\n".join(
+        p["text"] for p in parts if isinstance(p, dict) and p.get("type") == "text" and p.get("text")
+    )
+
+
+def snippet(text: str, terms: list[str], width: int = 90) -> str:
+    flat = " ".join(text.split())
+    low = flat.lower()
+    pos = min((low.find(t) for t in terms if t in low), default=0)
+    start = max(0, pos - width)
+    end = min(len(flat), pos + width)
+    return ("…" if start else "") + flat[start:end] + ("…" if end < len(flat) else "")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("terms", nargs="+")
+    ap.add_argument("--project", help="match the session directory (default: cwd)")
+    ap.add_argument("--all", action="store_true", help="every project")
+    ap.add_argument("--days", type=int, default=120)
+    ap.add_argument("-n", "--limit", type=int, default=20)
+    ap.add_argument("--offset", type=int, default=0, help="skip the first N hits")
+    ap.add_argument("--recent", action="store_true", help="sort by date, not by relevance")
+    args = ap.parse_args()
+
+    if not os.path.exists(DB):
+        print(f"no session database at {DB}", file=sys.stderr)
+        return 1
+
+    terms = [t.lower() for t in args.terms]
+    since = int((datetime.now() - timedelta(days=args.days)).timestamp() * 1000)
+    want = args.offset + args.limit
+
+    sql = (
+        "select m.time_created, m.type, s.directory, m.data "
+        "from session_message m join session_v2 s on s.id = m.session_id "
+        "where m.time_created >= ? and m.type in ('user','assistant')"
+    )
+    params: list[object] = [since]
+    if not args.all:
+        want_dir = os.path.abspath(args.project or os.getcwd())
+        sql += " and (s.directory = ? or s.directory like ?)"
+        params += [want_dir, want_dir + "/%"]
+    sql += " order by m.time_created desc"
+
+    def matches(con: sqlite3.Connection):
+        for created, kind, directory, raw in con.execute(sql, params):
+            text = message_text(kind, raw)
+            if not text:
+                continue
+            low = text.lower()
+            if not all(t in low for t in terms):
+                continue
+            yield sum(low.count(t) for t in terms), created, kind, directory, text
+
+    con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+    try:
+        if args.recent:
+            rows = list(itertools.islice(matches(con), want))
+        else:
+            rows = heapq.nlargest(want, matches(con), key=lambda r: (r[0], r[1]))
+    finally:
+        con.close()
+
+    hits = 0
+    for _score, created, kind, directory, text in rows[args.offset :]:
+        when = datetime.fromtimestamp(created / 1000).strftime("%Y-%m-%d %H:%M")
+        label = "you" if kind == "user" else "ai "
+        print(f"{when}  {label}  {os.path.basename(directory)}")
+        print(f"    {snippet(text, terms)}")
+        hits += 1
+
+    if not hits:
+        scope = "any project" if args.all else os.path.basename(args.project or os.getcwd())
+        tail = f" after {args.offset} hits" if args.offset else ""
+        print(f"no match for {args.terms} in {scope} (last {args.days} days){tail}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
