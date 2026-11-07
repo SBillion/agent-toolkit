@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Install the agent rules (and optionally the commit-msg hook) in this repo.
+set -euo pipefail
+
+usage() {
+  echo "usage: agent-rules <PREFIX> [base-branch] [--hooks] [--force]   e.g. agent-rules INT main" >&2
+  exit 2
+}
+
+prefix=""
+base="main"
+hooks=0
+force=0
+for arg in "$@"; do
+  case "$arg" in
+    --hooks) hooks=1 ;;
+    --force) force=1 ;;
+    -*) usage ;;
+    *) if [ -z "$prefix" ]; then prefix="$arg"; else base="$arg"; fi ;;
+  esac
+done
+[ -n "$prefix" ] || usage
+
+self="$(readlink "$0" || echo "$0")"
+here="$(cd "$(dirname "$self")/.." && pwd)"
+root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "not inside a git repository" >&2; exit 1; }
+
+dest="$root/docs/rules"
+if [ -e "$dest" ]; then
+  echo "kept existing $dest (delete it to reinstall)" >&2
+else
+  mkdir -p "$dest"
+  for f in "$here"/templates/rules/*.md; do
+    sed -e "s/<PREFIX>/$prefix/g" -e "s/<BASE_BRANCH>/$base/g" "$f" >"$dest/$(basename "$f")"
+  done
+  echo "wrote $dest"
+fi
+
+if [ "$hooks" = 1 ]; then
+  hook="$root/.githooks/commit-msg"
+  if [ -e "$hook" ] && [ "$force" != 1 ]; then
+    echo "kept existing $hook — diff it against $here/templates/hooks/commit-msg, or add --force" >&2
+  else
+    mkdir -p "$root/.githooks"
+    sed "s/<PREFIX>/$prefix/g" "$here/templates/hooks/commit-msg" >"$hook"
+    chmod +x "$hook"
+    echo "installed $hook"
+  fi
+  current="$(git -C "$root" config --get core.hooksPath || true)"
+  if [ -z "$current" ]; then
+    git -C "$root" config core.hooksPath .githooks
+    echo "core.hooksPath=.githooks"
+  elif [ "$current" != ".githooks" ]; then
+    echo "left core.hooksPath=$current untouched" >&2
+  fi
+fi
+
+cat <<EOF
+
+Point AGENTS.md at the rules, before your first branch or commit:
+
+## Agent rules
+
+Delivery, GSD, testing, language and security rules: [\`docs/rules/index.md\`](docs/rules/index.md).
+Read it before your first branch or commit.
+
+Or load them always, in opencode.json: "instructions": ["AGENTS.md", "docs/rules/index.md"].
+EOF
