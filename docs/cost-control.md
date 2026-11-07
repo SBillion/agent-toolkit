@@ -73,11 +73,18 @@ Start conservative so it never cuts a GSD workflow instruction mid-run:
   "enabled": true,
   "compress": { "mode": "range", "permission": "allow",
                 "maxContextLimit": 150000, "minContextLimit": 100000,
-                "nudgeFrequency": 5 },
+                "nudgeFrequency": 10 },
   "strategies": { "deduplication": { "enabled": true },
                   "purgeErrors": { "enabled": true, "turns": 4 } }
 }
 ```
+
+Once the session passes `minContextLimit`, the plugin injects a nudge into the
+model's context ("compress older turns"). That message is addressed to the agent,
+not to you — with `permission: "allow"` there is nothing to approve, and the
+result appears in the conversation as a compressed block. If the reminder is
+noisy, raise `nudgeFrequency`; do not lower `minContextLimit`, or it starts
+compressing instructions that are still in use.
 
 ## Rule 5 — one session, one task
 
@@ -94,6 +101,15 @@ that spans a whole day re-reads a whole day of context. Start a new one per task
 | `workflow.context_guard_mode` | `.planning/config.json` | `auto` pauses the agent before it overflows |
 | `review.max_prompt_tokens` | `.planning/config.json` | caps the review lane's prompt |
 | `/gsd-quick` | instead of a phase | a small task costs cents, not dollars |
+
+`compact_content` is not a machine-wide default: GSD reads it from each project's
+`.planning/config.json`, and an init or update can rewrite that file. After a GSD
+upgrade, check them all at once:
+
+```bash
+gsd-compact-all --dry-run    # lists the projects still missing the keys
+gsd-compact-all             # sets them
+```
 
 ## Measuring
 
