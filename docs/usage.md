@@ -67,7 +67,9 @@ are in [model routing](model-routing.md).
 
 ```bash
 cd <your-repo>
-agent-rules INT main --hooks
+agent-rules INT main --hooks                  # Linear, team INT, integration branch main
+agent-rules --tracker outline                 # tracked in Outline: no id in branches
+agent-rules --tracker none                    # personal repo: no tickets at all
 ```
 
 It writes `docs/rules/` (delivery, GSD, testing, engineering, deployment,
