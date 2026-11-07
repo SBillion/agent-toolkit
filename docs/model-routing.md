@@ -128,5 +128,5 @@ Keep `workflow.plan_bounce: true`. The checker is the cheapest guard you own.
 
 ---
 
-Files: [`config/defaults.example.json`](https://github.com/SBillion/gsd-toolkit/blob/main/config/defaults.example.json) ·
-[`bin/gsd-credits`](https://github.com/SBillion/gsd-toolkit/blob/main/bin/gsd-credits)
+Files: [`config/defaults.example.json`](https://github.com/SBillion/agent-toolkit/blob/main/config/defaults.example.json) ·
+[`bin/gsd-credits`](https://github.com/SBillion/agent-toolkit/blob/main/bin/gsd-credits)

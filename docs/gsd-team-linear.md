@@ -7,6 +7,11 @@ title: GSD in a team with Linear
 
 GSD plans and executes; Linear records what was decided. The two must not drift.
 
+These conventions also ship as a directory you install in a project —
+[`templates/rules/`](../templates/rules/index.md), written by
+`agent-rules <PREFIX> [base-branch]` and pointed to from `AGENTS.md`. This page
+keeps the explanation; those files are what an agent reads.
+
 For running several features or repos at once, and for onboarding a teammate, see
 [workspaces, workstreams and shared `.planning/`](gsd-team-workspaces.md).
 
@@ -21,8 +26,12 @@ For running several features or repos at once, and for onboarding a teammate, se
   for a single ticket.
 - **If a merge closes a ticket with work left, reopen it** and file the remainder
   the same day. This is the most common drift in a phase-per-milestone setup.
-- One Linear project per milestone, one issue per GSD phase. Keep the mapping in
-  `.planning/LINEAR.md`.
+- One Linear project per milestone, **one or more GSD issues per phase**: when a
+  phase carries several shippable slices, it becomes several tickets and a
+  stack, not one oversized ticket. Keep the mapping in `.planning/LINEAR.md`.
+- With [workstreams](gsd-team-workspaces.md), phase numbers repeat: every stream
+  has its own phase 1, 2, 3. Key the mapping on `<workstream>/<phase>`, never on
+  the phase number alone, or two streams' phases share one Linear issue.
 - The ticket id (`INT-<n>`) is the first token of the branch, the commit subject
   and the PR title. `Closes INT-<n>` goes in the PR body.
 
@@ -42,8 +51,13 @@ docs(server): explain the deploy status machine
 
 **The scope names the feature, never the phase number.** `fix(runs)`, not
 `fix(03)`. Someone reading `git log` without `.planning/` open must understand the
-change. When a GSD plan produced the commit, its id goes in the body on its own
-line: `Plan: 02-01`.
+change.
+
+**No GSD id in the record.** Phase numbers, plan ids (`02-01`) and workstream
+names belong to `.planning/` only: never in a commit subject or body, a branch, a
+PR title or body, a ticket title or description. A PR or ticket that needs the
+reasoning behind a decision links the GSD file
+(`.planning/phases/03-billing/PLAN.md`) — a reference, not a label.
 
 Breaking change: `!` after the type/scope plus a `BREAKING CHANGE:` footer.
 
