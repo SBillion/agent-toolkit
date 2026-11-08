@@ -73,12 +73,29 @@ if [ "$hooks" = 1 ]; then
     chmod +x "$hook"
     echo "installed $hook"
   fi
-  current="$(git -C "$root" config --get core.hooksPath || true)"
-  if [ -z "$current" ]; then
-    git -C "$root" config core.hooksPath .githooks
-    echo "core.hooksPath=.githooks"
-  elif [ "$current" != ".githooks" ]; then
-    echo "left core.hooksPath=$current untouched" >&2
+  if [ -f "$root/.pre-commit-config.yaml" ]; then
+    # core.hooksPath replaces .git/hooks, which is where pre-commit installs —
+    # setting it here would silently stop every other hook in the repo.
+    cat >&2 <<'PRE'
+left core.hooksPath untouched: this repo runs pre-commit, which owns .git/hooks.
+Declare the hook in .pre-commit-config.yaml and install it through pre-commit:
+
+    - id: commit-msg
+      name: commit-msg (the ticket closes the subject)
+      entry: bash .githooks/commit-msg
+      language: system
+      stages: [commit-msg]
+
+    pre-commit install --hook-type pre-commit --hook-type commit-msg
+PRE
+  else
+    current="$(git -C "$root" config --get core.hooksPath || true)"
+    if [ -z "$current" ]; then
+      git -C "$root" config core.hooksPath .githooks
+      echo "core.hooksPath=.githooks"
+    elif [ "$current" != ".githooks" ]; then
+      echo "left core.hooksPath=$current untouched" >&2
+    fi
   fi
 fi
 
