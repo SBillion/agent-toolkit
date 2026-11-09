@@ -12,6 +12,30 @@ A test that needs a database is not a unit test. A test that mocks the parser is
 not functional. Put each in its own folder (`tests/unit`, `tests/integration`,
 `tests/functional` or the project's equivalent) and tag it so `-m` selection works.
 
+## The folders mirror the code
+
+Inside each kind, keep the same tree as the production code: one folder per
+bounded context or package (`tests/unit/billing/`, `tests/integration/server/`).
+A test lives next to the unit it names, not in a flat pile. A file that outgrows
+one screen is split by **concern**, not by size: auth, listing, actions,
+failures. Shared fakes, stubs and builders move to a kit file (`fakes.py`,
+`helpers.py`, `runsTestKit.ts`) that the split files import — never copy a helper
+into each file.
+
+An end-to-end suite (browser or API against a deployed environment) lives in its
+own repository and mirrors the product's journeys (`search/`, `account/`,
+`accessibility/`), because "unit/integration/functional" describe code in the
+repo, not a deployed system.
+
+## Frontend
+
+Component and hook tests sit next to the component (`X.test.tsx`). Split a large
+one by concern (`Sites.list.test.tsx`, `Sites.actions.test.tsx`,
+`Sites.runs.test.tsx`) with a `sitesTestKit.tsx` holding the render helper and
+fixtures. Use `it.each` / `test.each` for tables of inputs; do not repeat the
+same `expect` five times. No real network: stub `fetch` and the browser APIs at
+the boundary. Test what the user sees (roles, labels, text), not internal state.
+
 ## Gates
 
 - **CI runs all three**, with a coverage floor on the aggregate, not per file.
