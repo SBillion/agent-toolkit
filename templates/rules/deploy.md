@@ -17,8 +17,11 @@ environment. A single-repo product deploys with the section on images in
 
 ## OpenTofu
 
-- **Remote state with locking** (R2/S3 + a lock table); **one operator at a
-  time**. Two concurrent applies corrupt state.
+- **Remote state, one operator at a time.** Two concurrent applies corrupt state.
+  Do not assume the backend enforces that: R2/S3 has no lock table, so the real
+  guard is the deploy workflow's concurrency group (and its close/rollback path).
+  A local "is anything running?" pre-check is racy — say so instead of implying a
+  lock that does not exist.
 - `tofu fmt -check` and `tofu validate` in CI, no credentials needed. `plan` runs
   on pull requests touching the infra; `apply` only from the deploy workflow.
 - **Create a resource in its right shape the first time.** Create-then-patch is
@@ -45,23 +48,32 @@ environment. A single-repo product deploys with the section on images in
 ## Exposure
 
 - **Firewall default-deny.** Database on the private IP only, API on loopback,
-  TLS terminated at the shared edge.
-- **SSH closed by default.** No standing rule on port 22; the deploy allowlists
-  its own runner IP for the run and closes it after. A human session uses an
-  explicit window workflow. Never `0.0.0.0/0`.
+  TLS terminated at the shared edge. Docker-published ports bypass host ufw, so
+  the compose binding plus the cloud firewall rules are the control there — ufw
+  is not.
+- **The cloud firewall is the authoritative SSH gate, and it is closed by
+  default.** The deploy allowlists its own runner IP for the run and closes it
+  after. A human session uses an explicit window workflow. Never `0.0.0.0/0` on
+  22. Host ufw only rate-limits it (`ufw limit 22/tcp`), so the host layer keeps a
+  throttled standing rule rather than an open door.
 - **Host keys verified** (`host_key_checking = True`, known hosts pinned). Do not
   disable it to get a deploy through — that is how the wrong host gets your
   playbook.
 - One shared edge serves several environments; the second environment brings up
-  only its own app stack (`--skip-tags base,edge,db`), never a second stack.
+  only its own app stack with an explicit `--skip-tags` list (the base roles plus
+  every role only the other environment needs), never a second stack. A short
+  list silently re-runs shared roles on the same box.
 
 ## A deploy
 
 - **Runs from the integration branch only**, behind an environment approval for
   production; it is never triggered by a pull request.
-- **Ends with a smoke check that fails the deploy**: the API answers its health
-  route, the database accepts connections, the public URL serves the page. A
-  deploy that "ran" but left the site down is a failed deploy.
+- **Ends with two checks, not one.** `smoke` is the last Ansible step — the API
+  answers its health route, the database accepts connections, the public URL
+  serves the page. After the firewall closes, an **external** probe from the
+  runner proves port 22 refuses or times out on every host: a check running on
+  the host it just configured cannot prove the box is unreachable from outside.
+  A deploy that "ran" but left the site down is a failed deploy.
 - **Rollback is redeploying the previous tag** — documented, and possible without
   a new commit.
 - Environments differ only in `envs/<env>/`; dev mirrors prod (same tokens
