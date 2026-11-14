@@ -1,10 +1,14 @@
 # Work across several repositories
 
-Most products here are a small graph of repos — an app, sometimes a
+Some products here are a small graph of repos — an app, sometimes a
 config/deploy repo, sometimes an e2e gate. State that graph in `AGENTS.md` (one
 line per repo and its role) before anything else; a rule that does not say
-*which* repo it applies to is half a rule. Not every product has all three: the
-sections below say when they apply.
+*which* repo it applies to is half a rule.
+
+**A single-repo product has no graph.** If the app, its backend and its checks
+live in one repo — a `qa/` folder beside `frontend/` is not a second repo — this
+file does not apply; the contract rules below exist for products that have a
+second repo asserting the first one's surface.
 
 ## One ticket, several PRs
 
